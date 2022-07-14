@@ -118,7 +118,7 @@ def main():
     if args.model == 'mpnet':
         tokenizer = AutoTokenizer.from_pretrained('all-mpnet-base-v2')
     if args.model == 'deberta_base':
-        tokenizer = DebertaTokenizer.from_pretrained('/home/tjh/deberta-base')
+        tokenizer = DebertaTokenizer.from_pretrained('deberta-base')
     if args.model == 'deberta_large':
         tokenizer = DebertaTokenizer.from_pretrained('deberta-large')
     if args.model == 'xlnet':
