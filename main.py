@@ -124,7 +124,7 @@ def main():
     if args.model == 'xlnet':
         tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
     if args.model == 'distilbert':
-        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased/')
+        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 
     if args.model == 'bert':
         encoder = BertEncoder()

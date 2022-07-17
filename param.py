@@ -9,7 +9,7 @@ cls = 1
 encoder_path = "encoder.pt"
 moe_path = "moe.pt"
 cls_path = "cls.pt"
-model_root = "checkpoint_semi"
+model_root = "checkpoint"
 num_labels = 2
 hidden_size = 768
 
