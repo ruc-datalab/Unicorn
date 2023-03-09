@@ -87,7 +87,7 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
                                 args.pre_epochs,
                                 step + 1,
                                 cls_loss.item(),
-                                cvloss.item(),
+                                balanceloss.item(),
                                 entroloss.item()))
                 else:
                     if (step + 1) % args.pre_log_step == 0:
@@ -290,13 +290,13 @@ def train_multi_moe_1cls_new_zero(args, encoder, moelayer, classifiers,
                 else:
                     feat = encoder(values1, mask1, segment1)
                 if args.load_balance:
-                    moeoutput,cvloss,entroloss,_ = moelayer(feat)
+                    moeoutput,balanceloss,entroloss,_ = moelayer(feat)
                 else:
                     moeoutput,_ = moelayer(feat)
                 preds = classifiers(moeoutput)
                 cls_loss = CELoss(preds, labels)
                 if args.load_balance:
-                    loss = cls_loss + 0.01*cvloss
+                    loss = cls_loss + 0.01*balanceloss
                 else:
                     loss = cls_loss
                 # optimize source classifier
@@ -371,7 +371,7 @@ def evaluate_moe_new(encoder, moelayer,classifier, data_loader,args=None,index=-
                 feat = encoder(reviews, mask, segment)
             if index==-1:
                 if args.load_balance:
-                    moeoutput,cvloss,_,gateweights = moelayer(feat)
+                    moeoutput,balanceloss,_,gateweights = moelayer(feat)
                     averagegateweight += gateweights
                 else:
                     moeoutput,gateweights = moelayer(feat)
