@@ -90,6 +90,8 @@ def parse_arguments():
 
     parser.add_argument('--shuffle', type=int, default=0, help="")
     parser.add_argument('--load_balance', type=int, default=0, help="")
+    parser.add_argument('--balance_loss',type=float,default=0.1, help="")
+    parser.add_argument('--entroloss',type=float,default=0.1, help="")    
     
     return parser.parse_args()
 

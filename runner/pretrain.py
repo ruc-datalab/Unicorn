@@ -70,7 +70,7 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
                 preds = classifiers(moeoutput)
                 cls_loss = CELoss(preds, labels)
                 if args.load_balance:
-                    loss = cls_loss + args.banlance_loss*balanceloss + args.entroloss*entroloss
+                    loss = cls_loss + args.balance_loss*balanceloss + args.entroloss*entroloss
                 else:
                     loss = cls_loss
                 # optimize source classifier
@@ -168,38 +168,37 @@ def train_multi_1cls_new(args, encoder, classifiers,
         encoder.train()
         classifiers.train()
         for i in range(len(train_data_loaders)):
-            if i>-1:
-                for step, pair in enumerate(train_data_loaders[i]):
-                    values1 = make_cuda(pair[0])
-                    mask1 = make_cuda(pair[1])
-                    segment1 = make_cuda(pair[2])
+            for step, pair in enumerate(train_data_loaders[i]):
+                values1 = make_cuda(pair[0])
+                mask1 = make_cuda(pair[1])
+                segment1 = make_cuda(pair[2])
 
-                    labels = make_cuda(pair[3])
+                labels = make_cuda(pair[3])
 
-                    # zero gradients for optimizer
-                    optimizer0.zero_grad()
-                    optimizers.zero_grad()
+                # zero gradients for optimizer
+                optimizer0.zero_grad()
+                optimizers.zero_grad()
 
-                    # compute loss for discriminator
-                    if args.model in ['distilbert','distilroberta']:
-                        feat = encoder(values1,mask1)
-                    else:
-                        feat = encoder(values1, mask1, segment1)
-                    preds = classifiers(feat)
-                    cls_loss = CELoss(preds, labels)
-                    loss = cls_loss
-                    # optimize source classifier
-                    loss.backward()
-                    optimizers.step()
-                    optimizer0.step()
+                # compute loss for discriminator
+                if args.model in ['distilbert','distilroberta']:
+                    feat = encoder(values1,mask1)
+                else:
+                    feat = encoder(values1, mask1, segment1)
+                preds = classifiers(feat)
+                cls_loss = CELoss(preds, labels)
+                loss = cls_loss
+                # optimize source classifier
+                loss.backward()
+                optimizers.step()
+                optimizer0.step()
 
-                    # print step info
-                    if (step + 1) % args.pre_log_step == 0:
-                        print("Epoch [%.2d/%.2d] Step [%.3d]: cls_loss=%.4f"
-                            % (epoch + 1,
-                                args.pre_epochs,
-                                step + 1,
-                                cls_loss.item()))
+                # print step info
+                if (step + 1) % args.pre_log_step == 0:
+                    print("Epoch [%.2d/%.2d] Step [%.3d]: cls_loss=%.4f"
+                        % (epoch + 1,
+                            args.pre_epochs,
+                            step + 1,
+                            cls_loss.item()))
         testaverage = 0
         metrics = ['hit','hit','f1','f1','f1','f1','f1','recall','recall','acc','acc','acc','acc','f1','f1',
                    'f1','f1','f1','f1','f1']
