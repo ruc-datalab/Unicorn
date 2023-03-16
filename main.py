@@ -153,8 +153,8 @@ def main():
     
     if args.load:
         encoder = init_model(args, encoder, restore=args.namef+"_"+param.encoder_path)
-        moelayer = init_model(args, moelayer, restore=args.namef+"_"+param.encoder_path)
-        classifiers = init_model(args, classifiers, restore=args.namef+"_"+param.encoder_path)
+        moelayer = init_model(args, moelayer, restore=args.namef+"_"+param.moe_path)
+        classifiers = init_model(args, classifiers, restore=args.namef+"_"+param.cls_path)
     else:
         encoder = init_model(args, encoder)
         classifiers = init_model(args, classifiers)
