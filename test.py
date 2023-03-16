@@ -86,9 +86,11 @@ def parse_arguments():
                         help="encoder output size")
     parser.add_argument('--units', type=int, default=1024, 
                     help="number of hidden")
-
     parser.add_argument('--shuffle', type=int, default=0, help="")
     parser.add_argument('--load_balance', type=int, default=0, help="")
+    
+    parser.add_argument('--dataset_path', type=str, default=None,
+                        help="Specify dataset path")
     
     return parser.parse_args()
 
@@ -100,13 +102,14 @@ def set_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 def main():
+    if not args.dataset_path:
+        print("Need to specify the test data path! ")
+        exit(1)
     # argument setting
     print("=== Argument Setting ===")
-    print("experts",args.expertsnum)
     print("encoder: " + str(args.model))
     print("max_seq_length: " + str(args.max_seq_length))
     print("batch_size: " + str(args.batch_size))
-    print("epochs: " + str(args.pre_epochs))
     set_seed(args.train_seed)
 
     if args.model in ['roberta', 'distilroberta']:
@@ -162,7 +165,7 @@ def main():
         if wmoe:
             moelayer = init_model(args, moelayer)
             
-    if args.pretrain and (not args.shuffle):
+    if args.pretrain:
         train_sets = []
         test_sets = []
         valid_sets = []
@@ -209,28 +212,13 @@ def main():
 
             
     test_sets = []
-    for key,p in dataformat.entity_alignment_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
-    for key,p in dataformat.string_matching_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
-    for key,p in dataformat.new_deepmatcher_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
-    for key,p in dataformat.new_schema_matching_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
-    for key,p in dataformat.column_type_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
-    for key,p in dataformat.entity_linking_data.items():
-        if p[0] == "test":
-            test_sets.append(get_data(p[1]+"test.json"))
+    for p in args.dataset_path.split(" "):
+        print("test data path: ", p)
+        test_sets.append(get_data(p))
 
     test_data_loaders = []
     for i in range(len(test_sets)):
-        print("======================== ", i)
+        print("test dataset ", i+1)
         fea = predata.convert_examples_to_features([ ["does " + x[0]+" [SEP] "+" matches with " +x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
         test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
 
@@ -241,10 +229,6 @@ def main():
     accs = []
     for k in range(len(test_data_loaders)):
         print("test datasets : ",k+1)
-        if k < 1: # for EA
-            prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,flag="get_prob",prob_name="prob.json")
-            calculate_hits_k(test_sets[k], prob)
-            continue
         f1, recall, acc = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,all=1)
         f1s.append(f1)
         recalls.append(recall)

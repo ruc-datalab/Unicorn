@@ -11,7 +11,7 @@ import param
 import dataformat
 from model import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
                    Classifier, MOEClassifier, RobertaEncoder, XLNetEncoder)
-from utils.utils import init_model, save_model
+from utils.utils import init_model
 from runner import pretrain, moe_layer
 from utils.utils import get_data
 from data_process.datasets import calculate_hits_k
@@ -152,10 +152,10 @@ def main():
         moelayer = moe_layer.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
     
     if args.load:
-        encoder = init_model(args, encoder, restore=param.encoder_path+args.namef)
-        classifiers = init_model(args, classifiers, restore=param.cls_path+args.namef)
+        encoder = init_model(args, encoder, restore=args.namef+"_"+param.encoder_path)
+        classifiers = init_model(args, classifiers, restore=args.namef+"_"+param.encoder_path)
         if wmoe:
-            moelayer = init_model(args, moelayer, restore=param.moe_path+args.namef)
+            moelayer = init_model(args, moelayer, restore=args.namef+"_"+param.encoder_path)
     else:
         encoder = init_model(args, encoder)
         classifiers = init_model(args, classifiers)

@@ -132,15 +132,17 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
                 best_classifiers = copy.deepcopy(classifiers)
                 best_average = testaverage
         
-        with open("testaveragesingle6.11.csv","a") as csvfile: 
-            writer = csv.writer(csvfile)
-            writer.writerow([args.expertsnum,args.units,best_average])
+    
+    if not valid_data_loaders:
+        best_encoder = copy.deepcopy(encoder)
+        best_moelayer = copy.deepcopy(moelayer)
+        best_classifiers = copy.deepcopy(classifiers)
 
     if need_save_model:
         print("save model")
-        save_model(args, best_encoder, param.encoder_path+"1cls1_"+args.namef)
-        save_model(args, best_moelayer, param.moe_path+"1cls1_"+args.namef)
-        save_model(args, best_classifiers, param.cls_path+"1cls1_"+args.namef)
+        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
+        save_model(args, best_moelayer, args.namef+"_"+param.moe_path)
+        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)
@@ -239,8 +241,8 @@ def train_multi_1cls_new(args, encoder, classifiers,
 
     if need_save_model:
         print("save model")
-        save_model(args, best_encoder, param.encoder_path+"1cls1_"+args.namef)
-        save_model(args, best_classifiers, param.cls_path+"1cls1_"+args.namef)
+        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
+        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)
@@ -328,9 +330,9 @@ def train_multi_moe_1cls_new_zero(args, encoder, moelayer, classifiers,
         
     if 1:
         print("save model")
-        save_model(args, best_encoder, param.encoder_path+"1cls1_"+args.namef)
-        save_model(args, best_moelayer, param.moe_path+"1cls1_"+args.namef)
-        save_model(args, best_classifiers, param.cls_path+"1cls1_"+args.namef)
+        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
+        save_model(args, best_moelayer, args.namef+"_"+param.moe_path)
+        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)

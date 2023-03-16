@@ -49,15 +49,17 @@ Step 1: Requirements
 Step 2: Run
 
 Run the script for Unicorn:
--    `python main.py --pretrain --model deberta_base`
+-    `cuda_visible_devices=1 python main.py --pretrain --model deberta_base`
 
 Run the script for Unicorn ++:
--    `python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
+-    `cuda_visible_devices=1 python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
 
 Run the script for Unicorn Zero-shot:
--    `python main-zero.py --pretrain --model deberta_base`
+-    `cuda_visible_devices=1 python main-zero.py --pretrain --model deberta_base`
 
 Run the script for Unicorn Zero-shot Prompt:
--    `python main-zero-prompt.py --pretrain --model deberta_base`
+-    `cuda_visible_devices=1 python main-zero-prompt.py --pretrain --model deberta_base`
 
 
+Load model and Direct Test: 
+-    `cuda_visible_devices=1 python test.py --load --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`

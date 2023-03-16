@@ -11,7 +11,7 @@ import param
 import dataformat
 from model import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
                    Classifier, MOEClassifier, RobertaEncoder, XLNetEncoder)
-from utils.utils import init_model, save_model
+from utils.utils import init_model
 from runner import pretrain, moe_layer
 from utils.utils import get_data
 from data_process.datasets import calculate_hits_k
@@ -120,7 +120,7 @@ def main():
     if args.model == 'mpnet':
         tokenizer = AutoTokenizer.from_pretrained('all-mpnet-base-v2')
     if args.model == 'deberta_base':
-        tokenizer = DebertaTokenizer.from_pretrained('deberta-base')
+        tokenizer = DebertaTokenizer.from_pretrained('/home/tjh/deberta-base')
     if args.model == 'deberta_large':
         tokenizer = DebertaTokenizer.from_pretrained('deberta-large')
     if args.model == 'xlnet':
@@ -152,9 +152,9 @@ def main():
     moelayer = moe_layer.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
     
     if args.load:
-        encoder = init_model(args, encoder, restore=param.encoder_path+args.namef)
-        moelayer = init_model(args, moelayer, restore=param.moe_path+args.namef)
-        classifiers = init_model(args, classifiers, restore=param.cls_path+args.namef)
+        encoder = init_model(args, encoder, restore=args.namef+"_"+param.encoder_path)
+        moelayer = init_model(args, moelayer, restore=args.namef+"_"+param.encoder_path)
+        classifiers = init_model(args, classifiers, restore=args.namef+"_"+param.encoder_path)
     else:
         encoder = init_model(args, encoder)
         classifiers = init_model(args, classifiers)
@@ -216,16 +216,11 @@ def main():
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
         encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, train_data_loaders, test_data_loaders,valid_data_loaders)
-        prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[0],args=args,flag="get_prob",prob_name="prob.json")
-        calculate_hits_k(test_sets[0], prob)
-        prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[1],args=args,flag="get_prob",prob_name="prob.json")
-        calculate_hits_k(test_sets[1], prob)
     
     if args.pretrain and args.shuffle:
         train_sets = []
         test_sets = []
         valid_sets = []
-        taskidx = 0
         limit = 10000
         for key,p in dataformat.entity_alignment_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
@@ -289,10 +284,23 @@ def main():
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
         encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, [train_data_loaders], test_data_loaders,valid_data_loaders)
-        prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[0],args=args,flag="get_prob",prob_name="prob.json")
-        calculate_hits_k(test_sets[0], prob)
-        prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[1],args=args,flag="get_prob",prob_name="prob.json")
-        calculate_hits_k(test_sets[1], prob)
+    
+    f1s = []
+    recalls = []
+    accs = []
+    for k in range(len(test_data_loaders)):
+        print("test datasets : ",k+1)
+        if k < 2: # for EA
+            prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,flag="get_prob",prob_name="prob.json")
+            calculate_hits_k(test_sets[k], prob)
+            continue
+        f1, recall, acc = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,all=1)
+        f1s.append(f1)
+        recalls.append(recall)
+        accs.append(acc)
+    print("F1: ", f1s)
+    print("Recall: ", recalls)
+    print("Acc: ", accs)
             
 
 if __name__ == '__main__':
