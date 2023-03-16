@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import csv
-import scipy
 
 class EntropyLoss(nn.Module):
     def __init__(self):

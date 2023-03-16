@@ -1,14 +1,9 @@
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 import torch.optim as optim
-import csv
-import os
-import math
 import sys
 import datetime
 import sys
-from itertools import zip_longest
 sys.path.append("../")
 from utils.utils import make_cuda, save_model
 import param
@@ -16,8 +11,6 @@ import copy
 import numpy as np
 import dataformat
 import json
-import scipy
-import collections
 
 def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
             train_data_loaders,test_data_loaders,valid_data_loaders=None,need_save_model=True,draw=True):

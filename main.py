@@ -2,8 +2,6 @@
 from transformers import BertTokenizer, RobertaTokenizer, AutoTokenizer, DebertaTokenizer, XLNetTokenizer, DistilBertTokenizer
 import torch
 
-import os
-import shutil
 import random
 import csv
 

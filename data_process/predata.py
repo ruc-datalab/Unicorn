@@ -1,9 +1,5 @@
-import json
-import csv
-from collections import defaultdict
 from torch.utils.data import DataLoader, TensorDataset, RandomSampler, SequentialSampler
 import torch
-from utils.utils import make_cuda, get_data, read_csv, save_to_csv, save_json
 
 class InputFeatures(object):
     """A single set of features of data."""

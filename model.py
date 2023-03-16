@@ -3,7 +3,6 @@ import param
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import BertModel, DistilBertModel, RobertaModel, AutoModel, DebertaModel, XLNetModel
-from tutel import moe as tutel_moe
 
 
 class BertEncoder(nn.Module):

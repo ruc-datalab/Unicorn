@@ -1,9 +1,5 @@
-import os
-import shutil
 import random
 import csv
-import json
-import datetime
 
 csv.field_size_limit(500 * 1024 * 1024)
 random.seed(10)
