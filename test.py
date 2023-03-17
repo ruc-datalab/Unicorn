@@ -201,10 +201,10 @@ def main():
         valid_data_loaders = []
         
         for i in range(len(train_sets)):
-            fea = predata.convert_examples_to_features([ ["does " + x[0]+" [SEP] "+" matches with " +x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
+            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
             train_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=1))
         for i in range(len(valid_sets)):
-            fea = predata.convert_examples_to_features([ ["does " + x[0]+" [SEP] "+" matches with " +x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
+            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
             valid_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
         print("train datasets num: ",len(train_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
@@ -219,7 +219,7 @@ def main():
     test_data_loaders = []
     for i in range(len(test_sets)):
         print("test dataset ", i+1)
-        fea = predata.convert_examples_to_features([ ["does " + x[0]+" [SEP] "+" matches with " +x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
+        fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
         test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
 
     print("test datasets num: ",len(test_data_loaders))
