@@ -41,7 +41,7 @@ Each dataset contains train.json / valid.json /test.json. The details can be fou
     - dbp_yg: SRPRS: DBP-YG
     - dbp_wd: SRPRS: DBP-WD
 
-<img src="figs/framework.png" width="720" />
+<img src="figs/framework.png" width="620" />
 
 
 ## Quick Start
@@ -54,26 +54,39 @@ Each dataset contains train.json / valid.json /test.json. The details can be fou
 
 Pre-train Unicorn with the given datasets
 -  Run the script for Unicorn:
--    `python main.py --pretrain --model deberta_base`
+```bash
+python main.py --pretrain --model deberta_base
+```
 
 - Run the script for Unicorn ++:
--    `python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
+```bash
+python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1
+```
 
 - Run the script for Unicorn Zero-shot:
--    `python main-zero.py --pretrain --model deberta_base`
+```bash
+python main-zero.py --pretrain --model deberta_base
+```
 
 - Run the script for Unicorn Zero-shot Prompt:
--    `python main-zero-prompt.py --pretrain --model deberta_base`
+```bash
+python main-zero-prompt.py --pretrain --model deberta_base
+```
 
-After the pre-training, the checkpoint folder is generated and the three modules of the model are saved: encoder.pt, moe.pt and cls.pt. If you don not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](...), and save them in checkpoint folder.
+After the pre-training, the `checkpoint` folder is generated and the three modules of the model are saved: `encoder.pt`, `moe.pt` and `cls.pt`. If you do not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](...), and save them in checkpoint folder.
 
 
 Finetune model with your dataset
 
--    `python finetune.py --load --ckpt UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." --modelname UnicornPlusNew`
+```bash
+python finetune.py --load --ckpt UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." --modelname UnicornPlusNew
+```
+
 - This script loads the pre-trained model `UnicornPlus`, and uses the training data represented by `--train_dataset_path` to finetune `UnicornPlus`, then outputs new model `UnicornPlusNew`.
 - Note that `--train_dataset_path` is required, `--valid_dataset_path` and `--test_dataset_path` are optional.
 
 Load model and direct test
 
--    `python test.py --load --ckpt UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`
+```bash
+python test.py --load --ckpt UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."
+```
