@@ -45,29 +45,35 @@ Each dataset contains train.json / valid.json /test.json. The details can be fou
 
 
 ## Quick Start
-Step 1: Requirements
+### Step 1: Requirements
 - Before running the code, please make sure your Python version is 3.6.5 and cuda version is 11.1. Then install necessary packages by :
 - `pip install -r requirements.txt`
 - `pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html`
 
-Step 2: Run
+### Step 2: Run
 
-Run the script for Unicorn:
+Pre-train Unicorn with the given datasets
+-  Run the script for Unicorn:
 -    `python main.py --pretrain --model deberta_base`
 
-Run the script for Unicorn ++:
+- Run the script for Unicorn ++:
 -    `python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
 
-Run the script for Unicorn Zero-shot:
+- Run the script for Unicorn Zero-shot:
 -    `python main-zero.py --pretrain --model deberta_base`
 
-Run the script for Unicorn Zero-shot Prompt:
+- Run the script for Unicorn Zero-shot Prompt:
 -    `python main-zero-prompt.py --pretrain --model deberta_base`
 
-Finetune model with your dataset:
+After the pre-training, the checkpoint folder is generated and the three modules of the model are saved: encoder.pt, moe.pt and cls.pt. If you don not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](...), and save them in checkpoint folder.
+
+
+Finetune model with your dataset
+
 -    `python finetune.py --load --ckpt UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." --modelname UnicornPlusNew`
 - This script loads the pre-trained model `UnicornPlus`, and uses the training data represented by `--train_dataset_path` to finetune `UnicornPlus`, then outputs new model `UnicornPlusNew`.
 - Note that `--train_dataset_path` is required, `--valid_dataset_path` and `--test_dataset_path` are optional.
 
-Load model and direct test: 
+Load model and direct test
+
 -    `python test.py --load --ckpt UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`

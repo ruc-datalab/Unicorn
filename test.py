@@ -80,11 +80,11 @@ def parse_arguments():
     
     parser.add_argument('--wmoe', type=int, default=1, 
                     help="with or without moe")
-    parser.add_argument('--expertsnum', type=int, default=15, 
+    parser.add_argument('--expertsnum', type=int, default=6, 
                     help="number of experts")
     parser.add_argument('--size_output', type=int, default=768,
                         help="encoder output size")
-    parser.add_argument('--units', type=int, default=1024, 
+    parser.add_argument('--units', type=int, default=768, 
                     help="number of hidden")
     parser.add_argument('--shuffle', type=int, default=0, help="")
     parser.add_argument('--load_balance', type=int, default=0, help="")

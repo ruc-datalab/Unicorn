@@ -108,7 +108,7 @@ def init_random_seed(manual_seed):
 def init_model(args, net, restore=None):
     # restore model weights
     if restore is not None:
-        path = os.path.join(param.model_root, args.model, str(args.train_seed), restore)
+        path = os.path.join(param.model_root, restore)
         if os.path.exists(path):
             net.load_state_dict(torch.load(path))
             print("Restore model from: {}".format(os.path.abspath(path)))
@@ -120,7 +120,7 @@ def init_model(args, net, restore=None):
     return net
 
 def save_model(args, net, name):
-    folder = os.path.join(param.model_root, args.model, str(args.train_seed))
+    folder = param.model_root
     path = os.path.join(folder, name)
     if not os.path.exists(folder):
         os.makedirs(folder)
