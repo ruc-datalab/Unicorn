@@ -65,8 +65,9 @@ Run the script for Unicorn Zero-shot Prompt:
 -    `python main-zero-prompt.py --pretrain --model deberta_base`
 
 Finetune model with your dataset:
--    `python finetune.py --load --namef UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." `
+-    `python finetune.py --load --ckpt UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." --modelname UnicornPlusNew`
+- This script loads the pre-trained model `UnicornPlus`, and uses the training data represented by `--train_dataset_path` to finetune `UnicornPlus`, then outputs new model `UnicornPlusNew`.
 - Note that `--train_dataset_path` is required, `--valid_dataset_path` and `--test_dataset_path` are optional.
 
 Load model and direct test: 
--    `python test.py --load --namef UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`
+-    `python test.py --load --ckpt UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`

@@ -118,9 +118,9 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
 
     if need_save_model:
         print("save model")
-        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
-        save_model(args, best_moelayer, args.namef+"_"+param.moe_path)
-        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
+        save_model(args, best_encoder, args.modelname+"_"+param.encoder_path)
+        save_model(args, best_moelayer, args.modelname+"_"+param.moe_path)
+        save_model(args, best_classifiers, args.modelname+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)
@@ -219,8 +219,8 @@ def train_multi_1cls_new(args, encoder, classifiers,
 
     if need_save_model:
         print("save model")
-        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
-        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
+        save_model(args, best_encoder, args.modelname+"_"+param.encoder_path)
+        save_model(args, best_classifiers, args.modelname+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)
@@ -308,9 +308,9 @@ def train_multi_moe_1cls_new_zero(args, encoder, moelayer, classifiers,
         
     if 1:
         print("save model")
-        save_model(args, best_encoder, args.namef+"_"+param.encoder_path)
-        save_model(args, best_moelayer, args.namef+"_"+param.moe_path)
-        save_model(args, best_classifiers, args.namef+"_"+param.cls_path)
+        save_model(args, best_encoder, args.modelname+"_"+param.encoder_path)
+        save_model(args, best_moelayer, args.modelname+"_"+param.moe_path)
+        save_model(args, best_classifiers, args.modelname+"_"+param.cls_path)
     
     end = datetime.datetime.now()
     print("Time: ",end-start)

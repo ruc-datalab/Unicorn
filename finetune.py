@@ -21,7 +21,7 @@ def parse_arguments():
     # argument parsing
     parser = argparse.ArgumentParser(description="Specify Params for Experimental Setting")
     parser.add_argument('--pretrain', default=False, action='store_true',
-                        help='Force to pretrain source encoder/classifier')
+                        help='Force to pretrain source encoder/moe/classifier')
 
     parser.add_argument('--seed', type=int, default=42,
                         help="Specify random state")
@@ -57,21 +57,23 @@ def parse_arguments():
                         help="Specify log step size for adaptation")
 
     parser.add_argument('--c_learning_rate', type=float, default=3e-6,
-                        help="Specify log step size for adaptation")
+                        help="Specify lr for training")
 
     parser.add_argument('--num_cls', type=int, default=5,
-                        help="whether to DA")
+                        help="")
     parser.add_argument('--num_tasks', type=int, default=2,
-                        help="whether to DA")
+                        help="")
 
     parser.add_argument('--resample', type=int, default=0,
-                        help="whether to DA")
-    parser.add_argument('--namef', type=str, default="",
-                        help="Specify model type")
+                        help="")
+    parser.add_argument('--modelname', type=str, default="",
+                        help="Specify saved model name")
+    parser.add_argument('--ckpt', type=str, default="",
+                        help="Specify loaded model name")
     parser.add_argument('--num_data', type=int, default=1000,
-                        help="whether to DA")
+                        help="")
     parser.add_argument('--num_k', type=int, default=2,
-                        help="whether to DA")
+                        help="")
 
     parser.add_argument('--scale', type=float, default=20, 
                     help="Use 20 for cossim, and 1 when you work with unnormalized embeddings with dot product")    
@@ -157,10 +159,10 @@ def main():
         moelayer = moe_layer.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
     
     if args.load:
-        encoder = init_model(args, encoder, restore=args.namef+"_"+param.encoder_path)
-        classifiers = init_model(args, classifiers, restore=args.namef+"_"+param.cls_path)
+        encoder = init_model(args, encoder, restore=args.ckpt+"_"+param.encoder_path)
+        classifiers = init_model(args, classifiers, restore=args.ckpt+"_"+param.cls_path)
         if wmoe:
-            moelayer = init_model(args, moelayer, restore=args.namef+"_"+param.moe_path)
+            moelayer = init_model(args, moelayer, restore=args.ckpt+"_"+param.moe_path)
     else:
         encoder = init_model(args, encoder)
         classifiers = init_model(args, classifiers)
