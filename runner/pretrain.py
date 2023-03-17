@@ -27,8 +27,7 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
     CELoss = nn.CrossEntropyLoss()
 
     start = datetime.datetime.now()
-    bestaverage = 0.0
-    if valid_data_loaders != None:
+    if valid_data_loaders:
         bestf1 = 0.0
         best_encoder = copy.deepcopy(encoder)
         best_moelayer = copy.deepcopy(moelayer)
@@ -90,22 +89,9 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
                                 step + 1,
                                 cls_loss.item()))
 
-        testaverage = 0
         metrics = ['hit','hit','f1','f1','f1','f1','f1','recall','recall','acc','acc','acc','acc','f1','f1',
                    'f1','f1','f1','f1','f1']
-        for k in range(2,len(test_data_loaders)):
-            print("test  datasets : ",k+1)
-            f1,recall,acc = evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,all=1)
-            if metrics[k]=='f1':
-                testaverage += f1
-            if metrics[k]=='recall':
-                testaverage += recall
-            if metrics[k]=='acc':
-                testaverage += acc
-        testaverage = testaverage/(len(test_data_loaders)-2)
-        print("testaverage:::",testaverage)
-        
-        if valid_data_loaders != None:
+        if valid_data_loaders:
             f1_valid = []
             for k in range(0,len(valid_data_loaders)):
                 print("valid  datasets : ",k+1)
@@ -123,7 +109,6 @@ def train_multi_moe_1cls_new(args, encoder, moelayer, classifiers,
                 best_encoder = copy.deepcopy(encoder)
                 best_moelayer = copy.deepcopy(moelayer)
                 best_classifiers = copy.deepcopy(classifiers)
-                best_average = testaverage
         
     
     if not valid_data_loaders:

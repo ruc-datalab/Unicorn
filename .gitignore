@@ -2,3 +2,5 @@
 *.log
 log/*
 checkpoint/*
+.vscode
+
