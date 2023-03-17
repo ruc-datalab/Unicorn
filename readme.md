@@ -53,19 +53,20 @@ Step 1: Requirements
 Step 2: Run
 
 Run the script for Unicorn:
--    `cuda_visible_devices=1 python main.py --pretrain --model deberta_base`
+-    `python main.py --pretrain --model deberta_base`
 
 Run the script for Unicorn ++:
--    `cuda_visible_devices=1 python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
+-    `python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1`
 
 Run the script for Unicorn Zero-shot:
--    `cuda_visible_devices=1 python main-zero.py --pretrain --model deberta_base`
+-    `python main-zero.py --pretrain --model deberta_base`
 
 Run the script for Unicorn Zero-shot Prompt:
--    `cuda_visible_devices=1 python main-zero-prompt.py --pretrain --model deberta_base`
+-    `python main-zero-prompt.py --pretrain --model deberta_base`
 
 Finetune model with your dataset:
--    `cuda_visible_devices=1 python finetune.py --load --namef UnicornPlus --model deberta_base --train_dataset_path "train_file_path.json" --valid_dataset_path "valid_file_path.json" --test_dataset_path "rest_file_path.json" `
+-    `python finetune.py --load --namef UnicornPlus --model deberta_base --train_dataset_path "train_file_path1.json train_file_path2.json ..." --valid_dataset_path "valid_file_path1.json valid_file_path2.json ..." --test_dataset_path "test_file_path1.json test_file_path2.json ..." `
+- Note that `--train_dataset_path` is required, `--valid_dataset_path` and `--test_dataset_path` are optional.
 
 Load model and direct test: 
--    `cuda_visible_devices=1 python test.py --load --namef UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`
+-    `python test.py --load --namef UnicornPlus --model deberta_base --dataset_path "test_file_path1.json test_file_path2.json ..."`
