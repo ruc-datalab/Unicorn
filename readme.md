@@ -41,7 +41,7 @@ Each dataset contains train.json / valid.json /test.json. The details can be fou
     - dbp_yg: SRPRS: DBP-YG
     - dbp_wd: SRPRS: DBP-WD
 
-<img src="figs/framework.png" width="820" />
+<img src="figs/framework.png" width="720" />
 
 
 ## Quick Start
