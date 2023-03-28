@@ -73,7 +73,7 @@ python main-zero.py --pretrain --model deberta_base
 python main-zero-prompt.py --pretrain --model deberta_base
 ```
 
-After the pre-training, the `checkpoint` folder is generated and the three modules of the model are saved: `encoder.pt`, `moe.pt` and `cls.pt`. If you do not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](...), and save them in checkpoint folder.
+After the pre-training, the `checkpoint` folder is generated and the three modules of the model are saved: `encoder.pt`, `moe.pt` and `cls.pt`. If you do not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](https://huggingface.co/RUC-DataLab/unicorn-plus-v1), and save them in checkpoint folder.
 
 
 Finetune model with your dataset

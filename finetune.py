@@ -66,7 +66,7 @@ def parse_arguments():
 
     parser.add_argument('--resample', type=int, default=0,
                         help="")
-    parser.add_argument('--modelname', type=str, default="",
+    parser.add_argument('--modelname', type=str, default="ft",
                         help="Specify saved model name")
     parser.add_argument('--ckpt', type=str, default="",
                         help="Specify loaded model name")
@@ -126,7 +126,7 @@ def main():
     if args.model == 'mpnet':
         tokenizer = AutoTokenizer.from_pretrained('all-mpnet-base-v2')
     if args.model == 'deberta_base':
-        tokenizer = DebertaTokenizer.from_pretrained('deberta-base')
+        tokenizer = DebertaTokenizer.from_pretrained('/home/tjh/deberta-base')
     if args.model == 'deberta_large':
         tokenizer = DebertaTokenizer.from_pretrained('deberta-large')
     if args.model == 'xlnet':
