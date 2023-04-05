@@ -1,8 +1,8 @@
 import torch
-import param
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import BertModel, DistilBertModel, RobertaModel, AutoModel, DebertaModel, XLNetModel
+from unicorn.utils import param
 
 
 class BertEncoder(nn.Module):
@@ -101,7 +101,7 @@ class XLNetEncoder(nn.Module):
 class DebertaBaseEncoder(nn.Module):
     def __init__(self):
         super(DebertaBaseEncoder, self).__init__()
-        self.encoder = DebertaModel.from_pretrained("deberta-base")
+        self.encoder = DebertaModel.from_pretrained("/home/tjh/deberta-base")
 
     def forward(self, x, mask=None, segment=None):
         outputs = self.encoder(x, attention_mask=mask, token_type_ids=segment)
@@ -129,45 +129,4 @@ class DebertaLargeEncoder(nn.Module):
             feat = torch.sum(outputs[0], dim=1)
             feat = torch.div(feat, token_len)
         return feat
-
-class Classifier(nn.Module):
-    def __init__(self, dropout=0.1):
-        super(Classifier, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.classifier = nn.Linear(param.hidden_size, param.num_labels)
-        self.apply(self.init_bert_weights)
-
-    def forward(self, x):
-        x = self.dropout(x)
-        out = self.classifier(x)
-        return out
-
-    def init_bert_weights(self, module):
-        """ Initialize the weights.
-        """
-        if isinstance(module, (nn.Linear, nn.Embedding)):
-            module.weight.data.normal_(mean=0.0, std=0.02)
-        if isinstance(module, nn.Linear) and module.bias is not None:
-            module.bias.data.zero_()
-
-
-class MOEClassifier(nn.Module):
-    def __init__(self, units, dropout=0.1):
-        super(MOEClassifier, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-        self.classifier = nn.Linear(units, param.num_labels)
-        self.apply(self.init_bert_weights)
-
-    def forward(self, x):
-        x = self.dropout(x)
-        out = self.classifier(x)
-        return out
-
-    def init_bert_weights(self, module):
-        """ Initialize the weights.
-        """
-        if isinstance(module, (nn.Linear, nn.Embedding)):
-            module.weight.data.normal_(mean=0.0, std=0.02)
-        if isinstance(module, nn.Linear) and module.bias is not None:
-            module.bias.data.zero_()
 

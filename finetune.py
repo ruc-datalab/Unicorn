@@ -4,17 +4,18 @@ import torch
 
 import random
 import csv
-
-import param
-import dataformat
-from model import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
-                   Classifier, MOEClassifier, RobertaEncoder, XLNetEncoder)
-from utils.utils import init_model
-from runner import pretrain, moe_layer
-from utils.utils import get_data
-from data_process.datasets import calculate_hits_k
-from data_process import predata
 import argparse
+
+from unicorn.model.encoder import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
+                   RobertaEncoder, XLNetEncoder)
+from unicorn.model.matcher import Classifier, MOEClassifier
+from unicorn.model import moe
+from unicorn.trainer import pretrain, evaluate
+from unicorn.utils.utils import get_data, init_model
+from unicorn.dataprocess import predata
+from unicorn.utils import param
+
+
 
 csv.field_size_limit(500 * 1024 * 1024)
 def parse_arguments():
@@ -98,6 +99,10 @@ def parse_arguments():
                         help="Specify valid dataset path")
     parser.add_argument('--test_dataset_path', type=str, default=None,
                         help="Specify test dataset path")
+    parser.add_argument('--train_metrics', type=str, default=None,
+                        help="Metric for train/valid dataset")
+    parser.add_argument('--test_metrics', type=str, default=None,
+                        help="Metric for test dataset")
     
     return parser.parse_args()
 
@@ -159,7 +164,7 @@ def main():
             
     if wmoe:
         exp = args.expertsnum
-        moelayer = moe_layer.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
+        moelayer = moe.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
     
     if args.load:
         encoder = init_model(args, encoder, restore=args.ckpt+"_"+param.encoder_path)
@@ -190,7 +195,16 @@ def main():
             for p in args.test_dataset_path.split(" "):
                 print("test data path: ", p)
                 test_sets.append(get_data(p,num=limit))
-            assert len(train_sets) == len(test_sets)
+
+        if args.train_metrics is None:
+            train_metrics = ['f1' for i in range(0, len(train_sets))]
+        else:
+            train_metrics = args.train_metrics.split(" ")
+        
+        if args.test_metrics is None:
+            test_metrics = ['f1' for i in range(0, len(test_sets))]
+        else:
+            test_metrics = args.test_metrics.split(" ")
 
 
         train_data_loaders = []
@@ -198,17 +212,17 @@ def main():
         test_data_loaders = []
         for i in range(len(train_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=1))
+            train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
         for i in range(len(test_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         for i in range(len(valid_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         print("train datasets num: ",len(train_data_loaders))
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
-        encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, train_data_loaders, test_data_loaders, valid_data_loaders)
+        encoder, moelayer, classifiers = pretrain.train_moe(args, encoder, moelayer, classifiers, train_data_loaders, valid_data_loaders, train_metrics)
     
     if args.shuffle:
         for p in args.train_dataset_path.split(" "):
@@ -225,23 +239,33 @@ def main():
                 test_sets.append(get_data(p,num=limit))
             assert len(train_sets) == len(test_sets)
 
+        if args.train_metrics is None:
+            train_metrics = ['f1' for i in range(0, len(train_sets))]
+        else:
+            train_metrics = args.train_metrics.split(" ")
+        
+        if args.test_metrics is None:
+            test_metrics = ['f1' for i in range(0, len(test_sets))]
+        else:
+            test_metrics = args.test_metrics.split(" ")
+
 
         train_data_loaders = []
         valid_data_loaders = []
         test_data_loaders = []
         for i in range(len(train_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.extend(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=1))
+            train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
         for i in range(len(test_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         for i in range(len(valid_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         print("train datasets num: ",len(train_data_loaders))
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
-        encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, [train_data_loaders], test_data_loaders, valid_data_loaders)
+        encoder, moelayer, classifiers = pretrain.train_moe(args, encoder, moelayer, classifiers, [train_data_loaders], valid_data_loaders, train_metrics)
 
     print("test datasets num: ",len(test_data_loaders))
     f1s = []
@@ -249,13 +273,17 @@ def main():
     accs = []
     for k in range(len(test_data_loaders)):
         print("test datasets : ",k+1)
-        f1, recall, acc = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,all=1)
-        f1s.append(f1)
-        recalls.append(recall)
-        accs.append(acc)
-    print(f1s)
-    print(recalls)
-    print(accs)
+        if test_metrics[k]=='hit': # for EA
+            prob = evaluate.evaluate_moe(encoder, moelayer, classifiers, test_data_loaders[k], args=args, flag="get_prob", prob_name="prob.json")
+            evaluate.calculate_hits_k(test_sets[k], prob)
+        else:
+            f1, recall, acc = evaluate.evaluate_moe(encoder, moelayer, classifiers, test_data_loaders[k], args=args, all=1)
+            f1s.append(f1)
+            recalls.append(recall)
+            accs.append(acc)
+    print("F1: ", f1s)
+    print("Recall: ", recalls)
+    print("ACC.", accs)
                 
                 
 

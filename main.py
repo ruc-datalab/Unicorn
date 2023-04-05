@@ -4,17 +4,16 @@ import torch
 
 import random
 import csv
-
-import param
-import dataformat
-from model import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
-                   Classifier, MOEClassifier, RobertaEncoder, XLNetEncoder)
-from utils.utils import init_model
-from runner import pretrain, moe_layer
-from utils.utils import get_data
-from data_process.datasets import calculate_hits_k
-from data_process import predata
 import argparse
+
+from unicorn.model.encoder import (BertEncoder, MPEncoder, DistilBertEncoder, DistilRobertaEncoder, DebertaBaseEncoder, DebertaLargeEncoder,
+                   RobertaEncoder, XLNetEncoder)
+from unicorn.model.matcher import  MOEClassifier
+from unicorn.model.moe import MoEModule
+from unicorn.trainer import pretrain, evaluate
+from unicorn.utils.utils import get_data, init_model
+from unicorn.dataprocess import predata, dataformat
+from unicorn.utils import param
 
 csv.field_size_limit(500 * 1024 * 1024)
 
@@ -92,7 +91,8 @@ def parse_arguments():
     parser.add_argument('--load_balance', type=int, default=0, help="")
     parser.add_argument('--balance_loss',type=float,default=0.1, help="")
     parser.add_argument('--entroloss',type=float,default=0.1, help="")    
-    
+
+
     return parser.parse_args()
 
 
@@ -149,7 +149,7 @@ def main():
 
     # one moe layer for selection
     exp = args.expertsnum
-    moelayer = moe_layer.MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
+    moelayer = MoEModule(args.size_output,args.units,exp,load_balance=args.load_balance)
     
     if args.load:
         encoder = init_model(args, encoder, restore=args.ckpt+"_"+param.encoder_path)
@@ -160,7 +160,7 @@ def main():
         classifiers = init_model(args, classifiers)
         moelayer = init_model(args, moelayer)
     
-    
+    metrics = []
     if args.pretrain and (not args.shuffle):
         train_sets = []
         test_sets = []
@@ -170,52 +170,59 @@ def main():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
         
         for key,p in dataformat.string_matching_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
         
         for key,p in dataformat.new_schema_matching_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.ontology_matching_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
         
         for key,p in dataformat.column_type_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.entity_linking_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.new_deepmatcher_data.items():
             train_sets.append(get_data(p[1]+"train.json",num=limit))
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         train_data_loaders = []
         test_data_loaders = []
         valid_data_loaders = []
         for i in range(len(train_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=1))
+            train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
         for i in range(len(test_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         print("train datasets num: ",len(train_data_loaders))
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
-        encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, train_data_loaders, test_data_loaders,valid_data_loaders)
+        encoder, moelayer, classifiers = pretrain.train_moe(args, encoder, moelayer, classifiers, train_data_loaders, valid_data_loaders, metrics)
     
     if args.pretrain and args.shuffle:
         train_sets = []
@@ -227,42 +234,49 @@ def main():
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
                     
         for key,p in dataformat.string_matching_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
         
         for key,p in dataformat.new_schema_matching_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.ontology_matching_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.column_type_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.entity_linking_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
 
         for key,p in dataformat.new_deepmatcher_data.items():
             traindata = get_data(p[1]+"train.json",num=limit)
             train_sets.extend(traindata)
             test_sets.append(get_data(p[1]+"test.json"))
             valid_sets.append(get_data(p[1]+"valid.json",num=limit))
+            metrics.append(p[2])
             
         train_data_loaders = []
         test_data_loaders = []
@@ -271,36 +285,36 @@ def main():
         train_sets = [train_sets]
         for i in range(len(train_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.extend(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=1))
+            train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
         for i in range(len(test_sets)):
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
             fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor00(fea, args.batch_size, do_train=0))
+            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         
         random.seed(args.seed)
         random.shuffle(train_data_loaders)
         print("train datasets num: ",len(train_data_loaders))
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
-        encoder, moelayer, classifiers = pretrain.train_multi_moe_1cls_new(args, encoder, moelayer, classifiers, [train_data_loaders], test_data_loaders,valid_data_loaders)
+        encoder, moelayer, classifiers = pretrain.train_moe(args, encoder, moelayer, classifiers, [train_data_loaders], valid_data_loaders, metrics)
     
     f1s = []
     recalls = []
     accs = []
     for k in range(len(test_data_loaders)):
         print("test datasets : ",k+1)
-        if k < 2: # for EA
-            prob = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,flag="get_prob",prob_name="prob.json")
-            calculate_hits_k(test_sets[k], prob)
-            continue
-        f1, recall, acc = pretrain.evaluate_moe_new(encoder, moelayer, classifiers, test_data_loaders[k],args=args,all=1)
-        f1s.append(f1)
-        recalls.append(recall)
-        accs.append(acc)
+        if metrics[k]=='hit': # for EA
+            prob = evaluate.evaluate_moe(encoder, moelayer, classifiers, test_data_loaders[k], args=args, flag="get_prob", prob_name="prob.json")
+            evaluate.calculate_hits_k(test_sets[k], prob)
+        else:
+            f1, recall, acc = evaluate.evaluate_moe(encoder, moelayer, classifiers, test_data_loaders[k], args=args, all=1)
+            f1s.append(f1)
+            recalls.append(recall)
+            accs.append(acc)
     print("F1: ", f1s)
     print("Recall: ", recalls)
-    print("Acc: ", accs)
+    print("ACC.", accs)
             
 
 if __name__ == '__main__':

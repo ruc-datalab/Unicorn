@@ -13,7 +13,7 @@ class InputFeatures(object):
         self.task_id = task_id
 
 
-def convert_fea_to_tensor00(features_list, batch_size, do_train):
+def convert_fea_to_tensor(features_list, batch_size, do_train):
     features = [x[0] for x in features_list]
 
     all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)

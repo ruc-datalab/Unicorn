@@ -7,7 +7,9 @@ import csv
 import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
-import param
+import matplotlib.pyplot as plt
+
+from unicorn.utils import param
 
 
 def read_csv(input_file):
@@ -127,7 +129,6 @@ def save_model(args, net, name):
     torch.save(net.state_dict(), path)
     print("save pretrained model to: {}".format(path))
 
-import matplotlib.pyplot as plt
 def draw_f1_line(datas,path):
     x = [i+1 for i in range(len(datas[0]))]
     plt.title('F1 score')    
