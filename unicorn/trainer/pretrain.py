@@ -85,19 +85,19 @@ def train_moe(args, encoder, moelayer, classifiers,
                                 cls_loss.item()))
 
         if valid_data_loaders:
-            f1_valid = []
-            for k in range(0,len(valid_data_loaders)):
+            avg_valid = []
+            for k in range(len(valid_data_loaders)):
                 print("valid  datasets : ",k+1)
                 f1,recall,acc = evaluate_moe(encoder, moelayer, classifiers, valid_data_loaders[k], args=args, all=1)
                 if metrics[k]=='f1':
-                    f1_valid.append(f1)
+                    avg_valid.append(f1)
                 if metrics[k]=='recall':
-                    f1_valid.append(recall)
-                if metrics[k]=='acc':
-                    f1_valid.append(acc)
-            if np.mean(f1_valid) > bestf1:
+                    avg_valid.append(recall)
+                if metrics[k]=='acc' or metrics[k]=='hit':
+                    avg_valid.append(acc)
+            if np.mean(avg_valid) > bestf1:
                 print("best epoch number: ",epoch)
-                bestf1 = np.mean(f1_valid)
+                bestf1 = np.mean(avg_valid)
 
                 best_encoder = copy.deepcopy(encoder)
                 best_moelayer = copy.deepcopy(moelayer)
@@ -173,19 +173,19 @@ def train_wo_moe(args, encoder, classifiers,
                             cls_loss.item()))
         
         if valid_data_loaders != None:
-            f1_valid = []
-            for k in range(0,len(valid_data_loaders)):
+            avg_valid = []
+            for k in range(len(valid_data_loaders)):
                 print("valid  datasets : ",k+1)
                 f1,recall,acc = evaluate_wo_moe(encoder, classifiers, valid_data_loaders[k],args=args,all=1)
                 if metrics[k]=='f1':
-                    f1_valid.append(f1)
+                    avg_valid.append(f1)
                 if metrics[k]=='recall':
-                    f1_valid.append(recall)
-                if metrics[k]=='acc':
-                    f1_valid.append(acc)
-            if np.mean(f1_valid) > bestf1:
+                    avg_valid.append(recall)
+                if metrics[k]=='acc' or metrics[k]=='hit':
+                    avg_valid.append(acc)
+            if np.mean(avg_valid) > bestf1:
                 print("best epoch number: ",epoch)
-                bestf1 = np.mean(f1_valid)
+                bestf1 = np.mean(avg_valid)
 
                 best_encoder = copy.deepcopy(encoder)
                 best_classifiers = copy.deepcopy(classifiers)

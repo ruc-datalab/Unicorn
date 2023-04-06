@@ -66,7 +66,7 @@ def parse_arguments():
 
     parser.add_argument('--resample', type=int, default=0,
                         help="")
-    parser.add_argument('--modelname', type=str, default="",
+    parser.add_argument('--modelname', type=str, default="Unicorn",
                         help="Specify saved model name")
     parser.add_argument('--ckpt', type=str, default="",
                         help="Specify loaded model name")
@@ -120,7 +120,7 @@ def main():
     if args.model == 'mpnet':
         tokenizer = AutoTokenizer.from_pretrained('all-mpnet-base-v2')
     if args.model == 'deberta_base':
-        tokenizer = DebertaTokenizer.from_pretrained('deberta-base')
+        tokenizer = DebertaTokenizer.from_pretrained('/home/tjh/deberta-base')
     if args.model == 'deberta_large':
         tokenizer = DebertaTokenizer.from_pretrained('deberta-large')
     if args.model == 'xlnet':
@@ -211,14 +211,37 @@ def main():
         train_data_loaders = []
         test_data_loaders = []
         valid_data_loaders = []
-        for i in range(len(train_sets)):
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
-        for i in range(len(test_sets)):
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model in ['bert','deberta_base','deberta_large','distilbert','mpnet']:
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] " +x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
+                train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] " +x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model in ['roberta','distilroberta']:
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
+                train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model=='xlnet':
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                train_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+
         print("train datasets num: ",len(train_data_loaders))
         print("test datasets num: ",len(test_data_loaders))
         print("valid datasets num: ",len(valid_data_loaders))
@@ -283,14 +306,36 @@ def main():
         valid_data_loaders = []
         
         train_sets = [train_sets]
-        for i in range(len(train_sets)):
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
-            train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
-        for i in range(len(test_sets)):
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
-            test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
-            fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
-            valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model in ['bert','deberta_base','deberta_large','distilbert','mpnet']:
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] " +x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
+                train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] " +x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model in ['roberta','distilroberta']:
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer)
+                train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer)
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features_roberta([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer)
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+        if args.model=='xlnet':
+            for i in range(len(train_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in train_sets[i] ], [int(x[2]) for x in train_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                train_data_loaders.extend(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=1))
+            for i in range(len(valid_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in valid_sets[i] ], [int(x[2]) for x in valid_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                valid_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
+            for i in range(len(test_sets)):
+                fea = predata.convert_examples_to_features([ [x[0]+" [SEP] "+x[1]] for x in test_sets[i] ], [int(x[2]) for x in test_sets[i]], args.max_seq_length, tokenizer, cls_token='<cls>', sep_token='<sep>')
+                test_data_loaders.append(predata.convert_fea_to_tensor(fea, args.batch_size, do_train=0))
         
         random.seed(args.seed)
         random.shuffle(train_data_loaders)

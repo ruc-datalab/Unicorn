@@ -65,7 +65,7 @@ def parse_arguments():
 
     parser.add_argument('--resample', type=int, default=0,
                         help="")
-    parser.add_argument('--modelname', type=str, default="",
+    parser.add_argument('--modelname', type=str, default="UnicornZero",
                         help="Specify saved model name")
     parser.add_argument('--ckpt', type=str, default="",
                         help="Specify loaded model name")
