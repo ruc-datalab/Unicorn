@@ -87,7 +87,7 @@ python main.py --pretrain --model deberta_base
 
 - Run the script for Unicorn++:
 ```bash
-python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1
+python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1 --modelname UnicornPlus
 ```
 
 - Run the script for Unicorn Zero-shot:
