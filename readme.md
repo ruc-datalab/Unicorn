@@ -14,31 +14,31 @@ Matching Tasks in Data Integration"](https://doi.org/10.1145/3588938). In this p
 
 ```sh
 |-- data # datasets for 20 matching tasks
-|-- figs # pictures
+|-- figs # figures
 |-- main.py # pre-train Unicorn under unified prediction setting with the given 20 datasets (section 5.2 in paper)
 |-- main-zero.py # pre-train Unicorn under zero-shot setting (section 5.3 in paper)
 |-- main-zero-template.py # pre-train Unicorn under zero-shot setting with instruction template (section 5.3 in paper)
 |-- finetune.py # fine-tune Unicorn with new dataset
-|-- test.py # test new dataset with Pre-train Unicorn
-|-- unicorn # code for fine-tune/pre-train
-    |-- dataprocess # configs for fine-tune/pre-train
-        |-- dataformat.py # dataset configuration file
-        |-- predata.py # data processing file
-    |-- model
+|-- test.py # test new dataset with the pre-trained Unicorn
+|-- unicorn # code for Unicorn
+    |-- dataprocess # data processing folder
+        |-- dataformat.py # dataset configuration
+        |-- predata.py # data processing function
+    |-- model # implementation of model
         |-- encoder.py # encoder module: convert serialized (a,b) into representation
         |-- moe.py # mixture-of-experts module: convert representation into a better representation
         |-- mather.py # matcher module: convert the representation into 0 (non-matching)/1 (matching)
-    |-- traner
+    |-- traner # model learning function
         |-- pretrain.py # training model function
         |-- evaluate.py # evaluation function
-    |-- utils
+    |-- utils # configuration files and tools
         |-- param.py # necessary parameter
         |-- utils.py # some auxiliary functions
 ```
 
 ## DataSets
 We publish 20 datasets of 7 matching tasks in Unicorn.
-Each dataset contains train.json / valid.json /test.json. The details can be found in our paper.
+Each dataset contains `train.json` / `valid.json` / `test.json`. The details can be found in our paper.
 
 - Entity Matching
     - em-wa: Walmart-Amazon
