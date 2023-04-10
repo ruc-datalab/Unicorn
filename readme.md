@@ -17,7 +17,7 @@ Matching Tasks in Data Integration"](https://doi.org/10.1145/3588938). In this p
 |-- figs # figures
 |-- main.py # pre-train Unicorn under unified prediction setting with the given 20 datasets (section 5.2 in paper)
 |-- main-zero.py # pre-train Unicorn under zero-shot setting (section 5.3 in paper)
-|-- main-zero-template.py # pre-train Unicorn under zero-shot setting with instruction template (section 5.3 in paper)
+|-- main-zero-ins.py # pre-train Unicorn under zero-shot setting with instruction instruction (section 5.3 in paper)
 |-- finetune.py # fine-tune Unicorn with new dataset
 |-- test.py # test new dataset with the pre-trained Unicorn
 |-- unicorn # code for Unicorn
@@ -95,9 +95,9 @@ python main.py --pretrain --model deberta_base --shuffle 1 --load_balance 1 --mo
 python main-zero.py --pretrain --model deberta_base
 ```
 
-- Run the script for Unicorn Zero-shot instruction template:
+- Run the script for Unicorn Zero-shot instruction:
 ```bash
-python main-zero-template.py --pretrain --model deberta_base
+python main-zero-ins.py --pretrain --model deberta_base
 ```
 
 After the pre-training, the `checkpoint` folder is generated and the three modules of the model are saved: `encoder.pt`, `moe.pt` and `cls.pt`. If you do not want to pre-train yourself, you can download our pre-trained model directly from [HuggingFace](https://huggingface.co/RUC-DataLab/unicorn-plus-v1), and save them in checkpoint folder.
