@@ -180,7 +180,7 @@ def main():
     train_sets = []
     test_sets = []
     valid_sets = []
-    limit = 10000
+    limit = 40000
     
     if not args.shuffle:
         for p in args.train_dataset_path.split(" "):
@@ -194,7 +194,7 @@ def main():
         if args.test_dataset_path:
             for p in args.test_dataset_path.split(" "):
                 print("test data path: ", p)
-                test_sets.append(get_data(p,num=limit))
+                test_sets.append(get_data(p))
 
         if args.train_metrics is None:
             train_metrics = ['f1' for i in range(0, len(train_sets))]
@@ -236,7 +236,7 @@ def main():
         if args.test_dataset_path:
             for p in args.test_dataset_path.split(" "):
                 print("test data path: ", p)
-                test_sets.append(get_data(p,num=limit))
+                test_sets.append(get_data(p))
             assert len(train_sets) == len(test_sets)
 
         if args.train_metrics is None:
